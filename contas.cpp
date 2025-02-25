@@ -4,13 +4,7 @@
 #include <string>
 #include <algorithm>
 
-struct User {
-    int id;
-    std::string name;
-    std::string passwd;
-    double saldo;
-    bool IsADM;
-};
+#include "Headers/Conta.h"
 
 std::vector<User> users;
 
@@ -34,7 +28,6 @@ void create() {
         users.push_back(newUser);
         std::cout << "Usuario cadastrado com sucesso!" << std::endl;
     }
-    Menu();
 }
 
 void listUsers() {
@@ -43,12 +36,10 @@ void listUsers() {
         std::cout << "ID: " << user.id << " | Nome: " << user.name
             << " | Senha: " << user.passwd << " | Saldo: " << user.saldo << "\n";
     }
-    Menu();
 }
 
 void login() {
-    std::string LOGuser;
-    std::string LOGpasswd;
+    std::string LOGuser, LOGpasswd;
     std::string userpasswd = "";
 
     std::cout << "LOGAR\n";
@@ -71,7 +62,6 @@ void login() {
     else {
         std::cout << "Usuario ou senha incorretos" << std::endl;
     }
-    Menu();
 }
 
 void DeletUser() {
@@ -89,16 +79,19 @@ void DeletUser() {
         users.erase(it, users.end());
         std::cout << "\nUsuario removido com sucesso!\n";
     }
-    else {
+    else if (IDforDelet == 00) {
+        Menu();
+    }
+    else
+    {
         std::cout << "\nID nao encontrado!\n";
     }
 
     listUsers();
-    Menu();
 }
 
 void SaveUser(const std::vector<User>& users, const std::string& filename) {
-    std::ofstream file(filename, std::ios::binary);
+    std::ofstream file(filename, std::ios::out);
     if (!file) {
         std::cerr << "Erro ao abrir o arquivo para salvar!\n";
         return;
@@ -114,11 +107,11 @@ void SaveUser(const std::vector<User>& users, const std::string& filename) {
 
 std::vector<User> CarregarUser(const std::string& filename) {
     std::vector<User> users;
-    std::ifstream file(filename, std::ios::binary);
+    std::ifstream file(filename, std::ios::in);
 
     if (!file) {
         std::cerr << "Erro ao abrir o arquivo para carregar!\n";
-        return users;
+        return users;  
     }
 
     User user;
@@ -128,31 +121,48 @@ std::vector<User> CarregarUser(const std::string& filename) {
         size_t pos2 = linha.find("|", pos1 + 1);
         size_t pos3 = linha.find("|", pos2 + 1);
 
-        if (pos1 == std::string::npos || pos2 == std::string::npos || pos3 == std::string::npos)
-            continue;
+        if (pos1 == std::string::npos || pos2 == std::string::npos || pos3 == std::string::npos) {
+            std::cerr << "Formato inválido na linha: " << linha << std::endl;
+            continue;  
+        }
 
+       
         user.id = std::stoi(linha.substr(0, pos1));
         user.name = linha.substr(pos1 + 1, pos2 - pos1 - 1);
         user.passwd = linha.substr(pos2 + 1, pos3 - pos2 - 1);
         user.saldo = std::stod(linha.substr(pos3 + 1));
 
-        users.push_back(user);
+        users.push_back(user);  
     }
 
-    file.close();
+    file.close();  
     std::cout << "Usuarios carregados de '" << filename << "' com sucesso!\n";
-    return users;
+    return users;  
+}
+
+void carregar() {
+    std::string filename = "C:/Program Files/VKdatabase/Dbsalvas.dbvk";
+    users = CarregarUser(filename);
 }
 
 void Save() {
-    std::string filename = "dados.usersdb";
+    std::string path = "C:/Program Files/VKdatabase";
+
+    if (std::filesystem::create_directory(path)) {
+    }
+    else
+    {
+        std::cout << "Falha ao criar o path." << std::endl;
+    }
+
+    std::string filename = "C:/Program Files/VKdatabase/Dbsalvas.dbvk";
     SaveUser(users, filename);
 }
 
 void Menu() {
     int escolha;
     while (true) {
-        std::cout << "\n1 | Cadastrar\n2 | Listar\n3 | Logar\n4 | Deletar\n5 | Salvar\nEscolha: ";
+        std::cout << "\n1 | Cadastrar\n2 | Listar\n3 | Logar\n4 | Deletar\n5 | Salvar\n6 | Carregar\nEscolha: ";
         std::cin >> escolha;
 
         switch (escolha) {
@@ -171,6 +181,9 @@ void Menu() {
         case 5:
             Save();
             break;
+        case 6:
+            carregar();
+            break;
         default:
             std::cout << "Opção inválida, tente novamente." << std::endl;
             break;
@@ -186,4 +199,3 @@ bool UserExist(const std::string& name) {
     }
     return false;
 }
-

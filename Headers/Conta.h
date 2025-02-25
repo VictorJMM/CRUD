@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <filesystem>
 
 struct User {
     std::string name;
@@ -13,7 +14,6 @@ struct User {
     bool IsADM;
     bool logado;
 };
-
 
 extern std::vector<User> users;
 
